@@ -12,28 +12,52 @@ def pp():
 # https://numpydoc.readthedocs.io/en/latest/format.html#sections
 
 
-def sample_function(a: int, b: str):
+def sample_function(arg1: int, arg2: str, arg3: str):
     r"""
-    Something something
+    Summary line.
+
+    Extended description of function.
 
     Parameters
     ----------
-    a : int, default: 5
-         Does something cool
-    b : str
-         Wow
+    arg1 : int, default: 5
+        Description of arg1
+    arg2 : str
+        Description of arg2
+    arg3 : str
+        The [JMESpath](https://jmespath.org) query.
 
-    See Also
+    Returns
+    -------
+    bool
+        Description of return value
+
+    Raises
+    ------
+    AttributeError
+        The ``Raises`` section is a list of all exceptions
+        that are relevant to the interface.
+    ValueError
+        If `arg2` is equal to `arg1`.
+
+    Examples
     --------
-    blabla
+    Examples should be written in doctest format, and should illustrate how
+    to use the function.
+
+    >>> a=1
+    >>> b=2
+    >>> func(a,b)
+    True
 
     Notes
     -----
-    alias: blabla
-    adesso tu
+    blabla
+
     """
 
 
+@pytest.mark.skip
 def test_numpydoc_function():
     doc = FunctionDoc(func=sample_function)
     assert doc["Parameters"] == [
@@ -46,9 +70,38 @@ def test_numpydoc_function():
 
 def test_numpydoc_string():
     doc = NumpyDocString(sample_function.__doc__)
+    assert doc["Summary"] == ["Summary line."]
+    assert doc["Extended Summary"] == ["Extended description of function."]
     assert doc["Parameters"] == [
-        Parameter(name="a", type="int, default: 5", desc=["Does something cool"]),
-        Parameter(name="b", type="str", desc=["Wow"]),
+        Parameter(name="arg1", type="int, default: 5", desc=["Description of arg1"]),
+        Parameter(name="arg2", type="str", desc=["Description of arg2"]),
+        Parameter(
+            name="arg3",
+            type="str",
+            desc=["The [JMESpath](https://jmespath.org) query."],
+        ),
     ]
-    assert doc["See Also"] == [([("blabla", None)], [])]
-    assert doc["Notes"] == ["alias: blabla", "adesso tu"]
+    assert doc["Returns"] == [
+        Parameter(name="", type="bool", desc=["Description of return value"])
+    ]
+    assert doc["Raises"] == [
+        Parameter(
+            name="",
+            type="AttributeError",
+            desc=[
+                "The ``Raises`` section is a list of all exceptions",
+                "that are relevant to the interface.",
+            ],
+        ),
+        Parameter(name="", type="ValueError", desc=["If `arg2` is equal to `arg1`."]),
+    ]
+    assert doc["Examples"] == [
+        "Examples should be written in doctest format, and should illustrate how",
+        "to use the function.",
+        "",
+        ">>> a=1",
+        ">>> b=2",
+        ">>> func(a,b)",
+        "True",
+    ]
+    assert doc["Notes"] == ["blabla"]
