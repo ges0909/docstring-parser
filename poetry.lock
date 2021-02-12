@@ -102,6 +102,14 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "docstring-parser"
+version = "0.7.3"
+description = ""
+category = "main"
+optional = false
+python-versions = "~=3.5"
+
+[[package]]
 name = "docutils"
 version = "0.16"
 description = "Docutils -- Python Documentation Utilities"
@@ -480,7 +488,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "fadf4f88c76978303a749b86b44974bba45bfd090c3e3dc9826f05ed9f1f04a9"
+content-hash = "e32088347052e97482e05c88da5232ad99388402378acd59e35095f749468b97"
 
 [metadata.files]
 alabaster = [
@@ -522,6 +530,9 @@ click = [
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+]
+docstring-parser = [
+    {file = "docstring_parser-0.7.3.tar.gz", hash = "sha256:cde5fbf8b846433dfbde1e0f96b7f909336a634d5df34a38cb75050c7346734a"},
 ]
 docutils = [
     {file = "docutils-0.16-py2.py3-none-any.whl", hash = "sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af"},
