@@ -7,6 +7,7 @@ authors = ["Gerrit Schrader <gerrit.schrader@vodafone.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 lark = "^0.11.1"
+numpydoc = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "6.*"
