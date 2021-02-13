@@ -57,6 +57,10 @@ def sample_function(arg1: int, arg2: str, arg3: str):
     """
 
 
+def func(a: int, b: int):
+    return True
+
+
 @pytest.mark.skip
 def test_numpydoc_function():
     doc = FunctionDoc(func=sample_function)
@@ -68,8 +72,9 @@ def test_numpydoc_function():
     assert doc["Notes"] == ["alias: blabla", "adesso tu"]
 
 
-def test_numpydoc_string():
-    doc = NumpyDocString(sample_function.__doc__)
+def test_numpydoc_string(benchmark):
+    # doc = NumpyDocString(docstring=sample_function.__doc__)
+    doc = benchmark(NumpyDocString, docstring=sample_function.__doc__)
     assert doc["Summary"] == ["Summary line."]
     assert doc["Extended Summary"] == ["Extended description of function."]
     assert doc["Parameters"] == [

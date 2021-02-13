@@ -1,6 +1,7 @@
-from docstring_parser.docstring_parser import DocstringParser
+from docstring_parser.lark_docstring_parser import DocstringParser
 
 # param1: The [JMESpath](https://jmespath.org) query.
+
 
 sample = r"""Summary line.
 
@@ -34,9 +35,12 @@ Examples:
     """
 
 
-def test_parse_google_style_function_docstring():
-    parser = DocstringParser()
-    docstring, error = parser.parse(text=sample)
+def test_parse_google_style_function_docstring(benchmark):
+    def parse(text):
+        parser = DocstringParser()
+        return parser.parse(text=sample)
+
+    docstring, error = benchmark(parse, text=sample)
 
     assert error is None, error
     assert docstring is not None

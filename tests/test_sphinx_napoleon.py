@@ -26,6 +26,7 @@ sample = r"""
     """
 
 
-def test_sphinx_napaleon():
-    doc = NumpyDocstring(docstring=sample, config=config)
-    print(doc.lines())
+def test_sphinx_napaleon(benchmark):
+    # doc = NumpyDocstring(docstring=sample, config=config)
+    doc = benchmark(NumpyDocstring, docstring=sample, config=config)
+    print("\n".join(doc.lines()))
