@@ -1,4 +1,4 @@
-from docstring_parser.lark_docstring_parser import DocstringParser
+from src.lark_lark_docstring_parser import DocstringParser
 
 # param1: The [JMESpath](https://jmespath.org) query.
 

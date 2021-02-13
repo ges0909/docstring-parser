@@ -1,0 +1,23 @@
+site_name: API Documentation
+
+docs_dir: mkdocs
+
+theme:
+  name: material
+
+markdown_extensions:
+  - admonition
+  - codehilite
+
+plugins:
+  - search
+  - mkdocstrings
+
+nav:
+  - Home: index.md
+  - Installation: prerequisites.md
+  - Modules:
+      - Docstring Parser: docstring-parser.md
+      - Lark Docstring parser: lark-docstring-parser.md
+      - Numpydoc: numpydoc.md
+      - Sphinx Napoleon: sphinx-napoleon.md
