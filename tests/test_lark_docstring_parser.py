@@ -1,60 +1,67 @@
+import pytest
+
 from src.lark_docstring_parser import DocstringParser
 
 # param1: The [JMESpath](https://jmespath.org) query.
 
 
-sample = r"""Summary line.
+# @pytest.mark.repeat(100)
+def test_parse_google_style_function_docstring(benchmark):
+    google_sample = r"""Summary line.
 
     Extended description of function.
+    2nd line.
+    3rd line.
 
-Args:
-    arg1: Description of arg1
-    arg2 (str): Description of arg2
-    arg3: The [JMESpath](https//jmespath.org) query.
+    Args:
+        arg1: Description of arg1
+        arg2 (str): Description of arg2
+        arg3: The [JMESpath](https//jmespath.org)
+            query.
 
-Returns:
-    bool: Description of return value
+    Returns:
+        bool: Description of return value
 
-Raises:
-    AttributeError: The ``Raises`` section is a list of all exceptions
-        that are relevant to the interface.
-    ValueError: If `arg2` is equal to `arg1`.
+    Raises:
+        AttributeError: The ``Raises`` section is a list of all exceptions
+            that are relevant to the interface.
+        ValueError: If `arg2` is equal to `arg1`.
 
-Alias:
-    what ever you want to call
+    Alias:
+        what ever you want to call
 
-Examples:
-    Examples should be written in doctest format, and should illustrate how
-    to use the function.
+    Examples:
+        Examples should be written in doctest format, and should illustrate how
+        to use the function.
 
-    >>> a=1
-    >>> b=2
-    >>> func(a,b)
-    True
+        >>> a=1
+        >>> b=2
+        >>> func(a,b)
+        True
 
-    """
+        """
 
-
-def test_parse_google_style_function_docstring(benchmark):
     def parse(text):
         parser = DocstringParser()
-        return parser.parse(text=sample)
+        return parser.parse(text=text)
 
-    docstring, error = parse(text=sample)
+    docstring, error = parse(text=google_sample)
     # docstring, error = benchmark(parse, text=sample)
 
     assert error is None, error
     assert docstring is not None
 
     assert docstring.summary == "Summary line."
-    assert docstring.description == "Extended description of function."
+    assert (
+        docstring.description == "Extended description of function. 2nd line. 3rd line."
+    )
     assert docstring.args == [
         ("arg1", "", "Description of arg1"),
         ("arg2", "str", "Description of arg2"),
         ("arg3", "", "The [JMESpath](https//jmespath.org) query."),
     ]
     assert docstring.returns == ("bool", "Description of return value")
-    assert docstring.yields == ""
+    assert docstring.yields is None
     assert docstring.raises == [
         (
             "AttributeError",

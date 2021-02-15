@@ -88,6 +88,7 @@ def test_google_style_docstring_parser(benchmark):
     google_sample = r"""Summary line.
 
         Extended description of function.
+        The alias of the function is "blablabla".
 
         Args:
             arg1 (int, default 5): Description of arg1
@@ -116,7 +117,7 @@ def test_google_style_docstring_parser(benchmark):
     # doc = parse(text=google_sample)
     doc = benchmark(parse, text=google_sample)
     assert doc.short_description == "Summary line."
-    assert doc.long_description == "Extended description of function."
+    assert doc.long_description == "Extended description of function.\nThe alias of the function is \"blablabla\"."
 
     assert doc.params[0].arg_name == "arg1"
     assert doc.params[0].type_name == "int, default 5"
