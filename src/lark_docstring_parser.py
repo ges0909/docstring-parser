@@ -85,17 +85,17 @@ class DocstringParser(Lark):
     grammar = r"""
     ?start:         summary description? args? (returns | yields)? raises? alias? examples?
 
-    summary:        WORD+ "\n"
-    description:    WORD+
-    args:           _ARGS COLON arg+
-    returns:        _RETURNS COLON TYPE COLON WORD+
-    yields:         _YIELDS COLON TYPE COLON WORD+
-    raises:         _RAISES COLON error+
-    alias:          _ALIAS COLON WORD+
-    examples:       _EXAMPLES COLON WORD+
+    summary:        WORD+ NL+
+    description:    WORD+ NL+
+    args:           _ARGS COLON NL arg+
+    returns:        _RETURNS COLON NL TYPE COLON WORD+
+    yields:         _YIELDS COLON NL TYPE COLON WORD+
+    raises:         _RAISES COLON NL error+
+    alias:          _ALIAS COLON NL WORD+
+    examples:       _EXAMPLES COLON NL WORD+
     
-    arg:            NAME COLON WORD+
-                  | NAME BRACKET_OPEN TYPE BRACKET_CLOSE COLON WORD+
+    arg:            NAME COLON (NL | SP) WORD+
+                  | NAME BRACKET_OPEN TYPE BRACKET_CLOSE COLON (NL | SP) WORD+
                   
     error:          TYPE COLON WORD+
     
@@ -113,6 +113,9 @@ class DocstringParser(Lark):
     BRACKET_CLOSE:  ")"
     WORD:           /[a-zA-Z0-9.`,>=()\[\]\/]+/
  
+    NL:             "\n"
+    SP:             " "
+    TAB:            ("  " | "    ")
     WS:             /\s+/
     
     %ignore         WS

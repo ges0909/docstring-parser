@@ -1,4 +1,4 @@
-from src.lark_lark_docstring_parser import DocstringParser
+from src.lark_docstring_parser import DocstringParser
 
 # param1: The [JMESpath](https://jmespath.org) query.
 
@@ -40,7 +40,8 @@ def test_parse_google_style_function_docstring(benchmark):
         parser = DocstringParser()
         return parser.parse(text=sample)
 
-    docstring, error = benchmark(parse, text=sample)
+    docstring, error = parse(text=sample)
+    # docstring, error = benchmark(parse, text=sample)
 
     assert error is None, error
     assert docstring is not None

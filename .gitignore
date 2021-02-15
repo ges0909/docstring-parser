@@ -1,2 +1,4 @@
 /.idea/
-/tests/.benchmarks/
+/.benchmarks/
+/.vscode/
+/html/
