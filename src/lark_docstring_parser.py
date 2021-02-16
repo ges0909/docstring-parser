@@ -22,69 +22,71 @@ class Docstring:
     examples: Optional[str] = None
 
 
+def words_to_str(tokens: list[Token], type_: str) -> str:
+    return " ".join([token.value for token in tokens if token.type == type_])
+
+
 class DocstringTransformer(Transformer):
     @staticmethod
-    def words_to_str(tokens: list[Token], type_: str) -> str:
-        return " ".join([token.value for token in tokens if token.type == type_])
-
-    @staticmethod
-    def start(
-        children: list,
-    ) -> dict[str, Union[str, tuple[str, str], tuple[str, str, str]]]:
+    def start(children: list[dict]) -> dict[str, Union[str, tuple]]:
         return dict(ChainMap(*children[::-1]))  # reduce list of dicts to single dict
 
-    def summary(self, tokens: list[Union[list[Token], Token]]) -> dict[str, str]:
-        return {"summary": self.words_to_str(tokens, type_="WORD")}
-
-    def description(self, tokens: list) -> dict[str, str]:
-        return {"description": self.words_to_str(tokens, type_="WORD")}
+    @staticmethod
+    def summary(tokens: list[Token]) -> dict[str, str]:
+        return {"summary": words_to_str(tokens, type_="WORD")}
 
     @staticmethod
-    def args(children: list) -> dict[str, list[tuple[str, str, str]]]:
-        return {"args": [child for child in children if isinstance(child, tuple)]}
+    def description(tokens: list[Token]) -> dict[str, str]:
+        return {"description": words_to_str(tokens, type_="WORD")}
 
-    def arg(self, tokens: list) -> tuple[str, str, str]:
+    @staticmethod
+    def args(token_lists: list[list[Token]]) -> dict[str, list[tuple[str, str, str]]]:
+        return {"args": [tl for tl in token_lists if isinstance(tl, tuple)]}
+
+    @staticmethod
+    def arg(tokens: list[Token]) -> tuple[str, str, str]:
         return (
-            self.words_to_str(tokens, type_="NAME"),
-            self.words_to_str(tokens, type_="TYPE"),
-            self.words_to_str(tokens, type_="WORD"),
+            words_to_str(tokens, type_="NAME"),
+            words_to_str(tokens, type_="TYPE"),
+            words_to_str(tokens, type_="WORD"),
         )
 
-    def returns(self, tokens: list) -> dict[str, tuple[str, str]]:
+    @staticmethod
+    def returns(tokens: list[Token]) -> dict[str, tuple[str, str]]:
         return {
             "returns": (
-                self.words_to_str(tokens, type_="TYPE"),
-                self.words_to_str(tokens, type_="WORD"),
+                words_to_str(tokens, type_="TYPE"),
+                words_to_str(tokens, type_="WORD"),
             )
         }
 
-    def yields(self, tokens: list) -> dict[str, tuple[str, str]]:
+    @staticmethod
+    def yields(tokens: list[Token]) -> dict[str, tuple[str, str]]:
         return {
             "yields": (
-                self.words_to_str(tokens, type_="TYPE"),
-                self.words_to_str(tokens, type_="WORD"),
+                words_to_str(tokens, type_="TYPE"),
+                words_to_str(tokens, type_="WORD"),
             )
         }
 
     @staticmethod
-    def raises(children: list) -> dict[str, list[tuple[str, str]]]:
-        return {"raises": [child for child in children if isinstance(child, tuple)]}
-
-    def error(self, tokens: list) -> tuple[str, str]:
-        return (
-            self.words_to_str(tokens, type_="TYPE"),
-            self.words_to_str(tokens, type_="WORD"),
-        )
-
-    def alias(self, tokens: list) -> dict[str, str]:
-        return {"alias": self.words_to_str(tokens, type_="WORD")}
-
-    def examples(self, tokens: list) -> dict[str, str]:
-        return {"examples": self.words_to_str(tokens, type_="WORD")}
+    def raises(token_lists: list[list[Token]]) -> dict[str, list[tuple]]:
+        return {"raises": ([tl for tl in token_lists if isinstance(tl, tuple)])}
 
     @staticmethod
-    def line(tokens: list[Token]) -> list[Token]:
-        return [token for token in tokens if token.type == "WORD"]
+    def error(tokens: list[Token]) -> tuple[str, str]:
+        return (
+            words_to_str(tokens, type_="TYPE"),
+            words_to_str(tokens, type_="WORD"),
+        )
+
+    @staticmethod
+    def alias(tokens: list[Token]) -> dict[str, str]:
+        return {"alias": words_to_str(tokens, type_="WORD")}
+
+    @staticmethod
+    def examples(tokens: list[Token]) -> dict[str, str]:
+        return {"examples": words_to_str(tokens, type_="WORD")}
 
 
 # https://google.github.io/styleguide/pyguide.html#381-docstrings) definitions
@@ -126,28 +128,26 @@ class DocstringParser(Lark):
     grammar = r"""
     ?start:         summary description? args? (returns | yields)? raises? alias? examples?
 
-    summary:        line _nl
-    description:    line+ _nl
+    summary:        _line _nl
+    description:    _line+ _nl
     args:           "Args"     ":" _nl arg+ _nl
-    returns:        "Returns"  ":" _nl return_ _nl
-    yields:         "Yields"   ":" _nl TYPE ":" yield _nl
+    returns:        "Returns"  ":" _nl _type _nl
+    yields:         "Yields"   ":" _nl TYPE ":" _type _nl
     raises:         "Raises"   ":" _nl error+ _nl
-    alias:          "Alias"    ":" _nl line _nl
-    examples:       "Examples" ":" _nl [ line | _nl ]+ _nl
+    alias:          "Alias"    ":" _nl _line _nl
+    examples:       "Examples" ":" _nl [ _line | _nl ]+ _nl
     
-    arg:            NAME [ "(" TYPE ")" ] ":" line+
-    return_:        TYPE ":" line+
-    yield:          TYPE ":" line+
-    error:          TYPE ":" line+
-    
-    line:           WORD+ _nl
-    _nl:            NL
+    arg:            NAME [ "(" TYPE ")" ] ":" _line+
+    error:          _type
+    _type:          TYPE ":" _line+
+    _line:          WORD+ _nl
+    _nl:            "\n"
     
     NAME:           /[_a-zA-Z][_a-zA-Z0-9]*/
     TYPE:           /[_a-zA-Z][_a-zA-Z0-9]*/
     WORD:           /[a-zA-Z0-9.`,>=()\[\]\/]/+
-    NL:             "\n"
-    SP:             /[ \t]/+
+    TAB:            "\t"
+    SP:             /[ ]/+
     
     %ignore         SP
     """
@@ -157,7 +157,6 @@ class DocstringParser(Lark):
             grammar=self.grammar,
             parser="earley",  # supports rule priority
             # parser="lalr",  # supports terminal priority
-            debug=True,
             # ambiguity="explicit",
             # lexer="dynamic_complete",
             **kwargs,

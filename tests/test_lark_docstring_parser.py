@@ -5,7 +5,7 @@ from src.lark_docstring_parser import DocstringParser
 # param1: The [JMESpath](https://jmespath.org) query.
 
 
-# @pytest.mark.repeat(100)
+# @pytest.mark.repeat(1000)
 def test_parse_google_style_function_docstring(benchmark):
     google_sample = r"""Summary line.
 
@@ -67,7 +67,10 @@ def test_parse_google_style_function_docstring(benchmark):
             "AttributeError",
             "The ``Raises`` section is a list of all exceptions that are relevant to the interface.",
         ),
-        ("ValueError", "If `arg2` is equal to `arg1`."),
+        (
+            "ValueError",
+            "If `arg2` is equal to `arg1`.",
+        ),
     ]
     assert docstring.alias == "what ever you want to call"
     assert (
