@@ -1,9 +1,13 @@
+import logging
 from collections import ChainMap
 from dataclasses import dataclass
 from typing import Tuple, Optional, Union
 
-from lark import Lark, UnexpectedToken, Transformer
+from lark import Lark, logger, Token
+from lark import UnexpectedToken, Transformer
 from lark.exceptions import UnexpectedCharacters, GrammarError
+
+logger.setLevel(logging.DEBUG)
 
 
 @dataclass()
@@ -20,7 +24,7 @@ class Docstring:
 
 class DocstringTransformer(Transformer):
     @staticmethod
-    def words_to_str(tokens, type_: str) -> str:
+    def words_to_str(tokens: list[Token], type_: str) -> str:
         return " ".join([token.value for token in tokens if token.type == type_])
 
     @staticmethod
@@ -29,7 +33,7 @@ class DocstringTransformer(Transformer):
     ) -> dict[str, Union[str, tuple[str, str], tuple[str, str, str]]]:
         return dict(ChainMap(*children[::-1]))  # reduce list of dicts to single dict
 
-    def summary(self, tokens: list) -> dict[str, str]:
+    def summary(self, tokens: list[Union[list[Token], Token]]) -> dict[str, str]:
         return {"summary": self.words_to_str(tokens, type_="WORD")}
 
     def description(self, tokens: list) -> dict[str, str]:
@@ -78,6 +82,10 @@ class DocstringTransformer(Transformer):
     def examples(self, tokens: list) -> dict[str, str]:
         return {"examples": self.words_to_str(tokens, type_="WORD")}
 
+    @staticmethod
+    def line(tokens: list[Token]) -> list[Token]:
+        return [token for token in tokens if token.type == "WORD"]
+
 
 # https://google.github.io/styleguide/pyguide.html#381-docstrings) definitions
 
@@ -111,47 +119,37 @@ class DocstringTransformer(Transformer):
 # should not document exceptions that get raised if the API specified in the docstring is violated
 # (because this would paradoxically make behavior under violation of the API part of the API).
 
+
 class DocstringParser(Lark):
     """parse google style docstrings of module level python functions"""
 
     grammar = r"""
-    ?start:         summary description args (returns | yields)? raises? alias? examples?
+    ?start:         summary description? args? (returns | yields)? raises? alias? examples?
 
-    summary:        WORD+ NL NL
-    description:    [ [ WORD+ NL ]+ NL ]*
-    args:           [ _ARGS COLON NL arg+ ]
-    returns:        _RETURNS COLON NL TYPE COLON WORD+
-    yields:         _YIELDS COLON NL TYPE COLON WORD+
-    raises:         _RAISES COLON NL error+
-    alias:          _ALIAS COLON NL WORD+
-    examples:       _EXAMPLES COLON NL WORD+
+    summary:        line _nl
+    description:    line+ _nl
+    args:           "Args"     ":" _nl arg+ _nl
+    returns:        "Returns"  ":" _nl return_ _nl
+    yields:         "Yields"   ":" _nl TYPE ":" yield _nl
+    raises:         "Raises"   ":" _nl error+ _nl
+    alias:          "Alias"    ":" _nl line _nl
+    examples:       "Examples" ":" _nl [ line | _nl ]+ _nl
     
-    arg:            TAB NAME COLON (NL | SP) [WORD+ NL]+
-                  | TAB NAME BRACKET_OPEN TYPE BRACKET_CLOSE COLON (NL | SP) [WORD+ NL]+
-                  
-    error:          TAB TYPE COLON [WORD+ NL]+
+    arg:            NAME [ "(" TYPE ")" ] ":" line+
+    return_:        TYPE ":" line+
+    yield:          TYPE ":" line+
+    error:          TYPE ":" line+
     
-    _ARGS:          "Args"
-    _RETURNS:       "Returns"
-    _YIELDS:        "Yields"
-    _RAISES:        "Raises"
-    _ALIAS:         "Alias"
-    _EXAMPLES:      "Examples"
+    line:           WORD+ _nl
+    _nl:            NL
     
-    NAME:           /[a-zA-Z][a-zA-Z0-9_]*/
-    TYPE:           /[a-zA-Z][a-zA-Z0-9_]*/
-    COLON:          ":"
-    BRACKET_OPEN:   "("
-    BRACKET_CLOSE:  ")"
-    WORD:           /[a-zA-Z0-9.`,>=()\[\]\/]+/
-
+    NAME:           /[_a-zA-Z][_a-zA-Z0-9]*/
+    TYPE:           /[_a-zA-Z][_a-zA-Z0-9]*/
+    WORD:           /[a-zA-Z0-9.`,>=()\[\]\/]/+
     NL:             "\n"
-    SP:             " "
-    TAB:            ("  " | "    " | "\t")
+    SP:             /[ \t]/+
     
-    WS:             /\s+/
-    
-    %ignore         WS
+    %ignore         SP
     """
 
     def __init__(self, **kwargs):
@@ -159,6 +157,9 @@ class DocstringParser(Lark):
             grammar=self.grammar,
             parser="earley",  # supports rule priority
             # parser="lalr",  # supports terminal priority
+            debug=True,
+            # ambiguity="explicit",
+            # lexer="dynamic_complete",
             **kwargs,
         )
 
