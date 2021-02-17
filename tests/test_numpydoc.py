@@ -12,7 +12,8 @@ def pp():
 # https://numpydoc.readthedocs.io/en/latest/format.html#sections
 
 
-def sample_function(arg1: int, arg2: str, arg3: str):
+@pytest.mark.skip
+def test_numpydoc_function():
     r"""
     Summary line.
 
@@ -55,15 +56,7 @@ def sample_function(arg1: int, arg2: str, arg3: str):
     blabla
 
     """
-
-
-def func(a: int, b: int):
-    return True
-
-
-@pytest.mark.skip
-def test_numpydoc_function():
-    doc = FunctionDoc(func=sample_function)
+    doc = FunctionDoc(func=test_numpydoc_function.__doc__)
     assert doc["Parameters"] == [
         Parameter(name="a", type="int, default: 5", desc=["Does something cool"]),
         Parameter(name="b", type="str", desc=["Wow"]),
@@ -73,8 +66,50 @@ def test_numpydoc_function():
 
 
 def test_numpydoc_string(benchmark):
+    r"""
+    Summary line.
+
+    Extended description of function.
+
+    Parameters
+    ----------
+    arg1 : int, default: 5
+        Description of arg1
+    arg2 : str
+        Description of arg2
+    arg3 : str
+        The [JMESpath](https://jmespath.org) query.
+
+    Returns
+    -------
+    bool
+        Description of return value
+
+    Raises
+    ------
+    AttributeError
+        The ``Raises`` section is a list of all exceptions
+        that are relevant to the interface.
+    ValueError
+        If `arg2` is equal to `arg1`.
+
+    Examples
+    --------
+    Examples should be written in doctest format, and should illustrate how
+    to use the function.
+
+    >>> a=1
+    >>> b=2
+    >>> func(a,b)
+    True
+
+    Notes
+    -----
+    blabla
+
+    """
     # doc = NumpyDocString(docstring=sample_function.__doc__)
-    doc = benchmark(NumpyDocString, docstring=sample_function.__doc__)
+    doc = benchmark(NumpyDocString, docstring=test_numpydoc_string.__doc__)
     assert doc["Summary"] == ["Summary line."]
     assert doc["Extended Summary"] == ["Extended description of function."]
     assert doc["Parameters"] == [
@@ -86,9 +121,7 @@ def test_numpydoc_string(benchmark):
             desc=["The [JMESpath](https://jmespath.org) query."],
         ),
     ]
-    assert doc["Returns"] == [
-        Parameter(name="", type="bool", desc=["Description of return value"])
-    ]
+    assert doc["Returns"] == [Parameter(name="", type="bool", desc=["Description of return value"])]
     assert doc["Raises"] == [
         Parameter(
             name="",

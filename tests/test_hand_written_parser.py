@@ -2,7 +2,7 @@ from src.hand_written_parser import parse
 
 
 def test_hand_written_parser():
-    google_sample = r"""Summary line.
+    """Summary line.
 
     Extended description of function.
     2nd line.
@@ -32,5 +32,5 @@ def test_hand_written_parser():
         >>> func(a,b)
         True
 
-        """
-    docstring = parse(text=google_sample)
+    """
+    docstring = parse(text=test_hand_written_parser.__doc__)

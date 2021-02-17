@@ -20,4 +20,5 @@ nav:
       - Docstring Parser: docstring-parser.md
       - Lark Docstring parser: lark-docstring-parser.md
       - Numpydoc: numpydoc.md
+      - Pdoc3: pdoc3-parser.md
       - Sphinx Napoleon: sphinx-napoleon.md
