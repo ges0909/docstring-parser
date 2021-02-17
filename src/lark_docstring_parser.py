@@ -2,16 +2,16 @@
 
 For google style see: https://google.github.io/styleguide/pyguide.html#381-docstrings)
 """
-
+import string
 from dataclasses import dataclass
-from typing import Tuple, Optional, Union
+from typing import Tuple, Optional
 
 from lark import Lark, Token
 from lark import UnexpectedToken, Transformer
 from lark.exceptions import UnexpectedCharacters
 
 
-@dataclass(frozen=True)
+@dataclass
 class Docstring:
     summary: Optional[str] = None
     description: Optional[str] = None
@@ -22,18 +22,22 @@ class Docstring:
     alias: Optional[str] = None
     examples: Optional[str] = None
 
+    def __post_init__(self):
+        self.alias = self.alias.translate({ord(c): None for c in string.whitespace})  # white space elimination
+        self.alias = self.alias.casefold()  # aggressive lower case conversion
+
 
 def tokens_to_str(tokens: list[Token], type_: str) -> str:
     return " ".join([token.value for token in tokens if token.type == type_]) or None
 
 
-class TreeToDict(Transformer):
+class TreeToDocstring(Transformer):
     """transforms lark trees to dicts"""
 
     @staticmethod
-    def start(dict_list: list[dict]) -> dict[str, Union[str, tuple]]:
-        """reduce list of dicts to single dict"""
-        return {key: value for dict_ in dict_list for key, value in dict_.items()}
+    def start(dict_list: list[dict]) -> Docstring:
+        properties = {k: v for dict_ in dict_list for k, v in dict_.items()}  # reduce to single dict
+        return Docstring(**properties)
 
     @staticmethod
     def summary(tokens: list[Token]) -> dict[str, str]:
@@ -132,7 +136,6 @@ class DocstringParser(Lark):
         try:
             tree = super().parse(text=text, **kwargs)
             # print("\n" + tree.pretty())
-            dict_ = TreeToDict().transform(tree)
-            return Docstring(**dict_), None
+            return TreeToDocstring().transform(tree), None
         except (UnexpectedCharacters, UnexpectedToken) as error:
             return None, ", ".join(error.args)

@@ -25,7 +25,7 @@ Raises:
     ValueError: If `arg2` is equal to `arg1`.
 
 Alias:
-    what ever you want to call
+    What ever you want to call
 
 Examples:
     Examples should be written in doctest format, and should illustrate how
@@ -41,9 +41,7 @@ Examples:
 
 def assert_doctsring(docstring: Docstring):
     assert docstring.summary == "Summary line."
-    assert (
-        docstring.description == "Extended description of function. 2nd line. 3rd line."
-    )
+    assert docstring.description == "Extended description of function. 2nd line. 3rd line."
     assert docstring.args == [
         ("arg1", None, "Description of arg1"),
         ("arg2", "str", "Description of arg2"),
@@ -63,7 +61,7 @@ def assert_doctsring(docstring: Docstring):
             "If `arg2` is equal to `arg1`.",
         ),
     ]
-    assert docstring.alias == "what ever you want to call"
+    assert docstring.alias == "whateveryouwanttocall"
     assert (
         docstring.examples
         == "Examples should be written in doctest format, and should illustrate how to use the function."
@@ -101,3 +99,20 @@ def test_parse_google_style_initialized_parser(benchmark, parser):
     assert docstring is not None
 
     assert_doctsring(docstring)
+
+
+def test_summary(parser):
+    summary = r"""Summary line."""
+    docstring, error = parser.parse(text=summary)
+
+    assert error is None, error
+    assert docstring is not None
+
+
+def test_summary_newline(parser):
+    summary = r"""Summary line.
+"""
+    docstring, error = parser.parse(text=summary)
+
+    assert error is None, error
+    assert docstring is not None
