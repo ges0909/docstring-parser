@@ -9,11 +9,13 @@ poetry add pdoc3
 ```
 
 ```bash
-pdoc --html tests
-start html\tests\index.html
+pdoc --force --html src tests
+start html/tests/index.html
 ```
 
-See `html_helpers.py` to get _numpy_ and _google_ style parsing based on regexp.
+- allows mixing _google_ and _numpy_ styles
+- see `html_helpers.py` to get _numpy_ and _google_ style parsing based on regexp
+- missing landing page for multiple packages
 
 ## Mkdocs
 
@@ -26,7 +28,7 @@ mkdocs new .
 mkdocs serve
 ```
 
-!!! Supports only _Google_ style.
+- supports _google_ style only
 
 Ref. [Documenting a Python package with mkdocs-material](https://chrieke.medium.com/documenting-a-python-package-with-code-reference-via-mkdocs-material-b4a45197f95b).
 
@@ -86,6 +88,9 @@ Indices and tables
 ./make.bat html
 start build/html/index.html
 ```
+
+- mixing _google_ and _numpy_ style **not** recommended
+
 
 Ref. [Using Sphinx for Python Documentation](https://shunsvineyard.info/2019/09/19/use-sphinx-for-python-documentation/).
 
