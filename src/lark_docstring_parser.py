@@ -1,16 +1,17 @@
-import logging
-from collections import ChainMap
+"""Parser to parse google style docstrings of module level python functions
+
+For google style see: https://google.github.io/styleguide/pyguide.html#381-docstrings)
+"""
+
 from dataclasses import dataclass
 from typing import Tuple, Optional, Union
 
-from lark import Lark, logger, Token
+from lark import Lark, Token
 from lark import UnexpectedToken, Transformer
-from lark.exceptions import UnexpectedCharacters, GrammarError
-
-logger.setLevel(logging.DEBUG)
+from lark.exceptions import UnexpectedCharacters
 
 
-@dataclass()
+@dataclass(frozen=True)
 class Docstring:
     summary: Optional[str] = None
     description: Optional[str] = None
@@ -22,22 +23,25 @@ class Docstring:
     examples: Optional[str] = None
 
 
-def words_to_str(tokens: list[Token], type_: str) -> str:
+def tokens_to_str(tokens: list[Token], type_: str) -> str:
     return " ".join([token.value for token in tokens if token.type == type_]) or None
 
 
 class TreeToDict(Transformer):
+    """transforms lark trees to dicts"""
+
     @staticmethod
-    def start(children: list[dict]) -> dict[str, Union[str, tuple]]:
-        return dict(ChainMap(*children[::-1]))  # reduce list of dicts to single dict
+    def start(dict_list: list[dict]) -> dict[str, Union[str, tuple]]:
+        """reduce list of dicts to single dict"""
+        return {key: value for dict_ in dict_list for key, value in dict_.items()}
 
     @staticmethod
     def summary(tokens: list[Token]) -> dict[str, str]:
-        return {"summary": words_to_str(tokens, type_="WORD")}
+        return {"summary": tokens_to_str(tokens, type_="WORD")}
 
     @staticmethod
     def description(tokens: list[Token]) -> dict[str, str]:
-        return {"description": words_to_str(tokens, type_="WORD")}
+        return {"description": tokens_to_str(tokens, type_="WORD")}
 
     @staticmethod
     def args(token_lists: list[list[Token]]) -> dict[str, list[tuple[str, str, str]]]:
@@ -46,17 +50,17 @@ class TreeToDict(Transformer):
     @staticmethod
     def arg(tokens: list[Token]) -> tuple[str, str, str]:
         return (
-            words_to_str(tokens, type_="NAME"),
-            words_to_str(tokens, type_="TYPE"),
-            words_to_str(tokens, type_="WORD"),
+            tokens_to_str(tokens, type_="NAME"),
+            tokens_to_str(tokens, type_="TYPE"),
+            tokens_to_str(tokens, type_="WORD"),
         )
 
     @staticmethod
     def returns(tokens: list[Token]) -> dict[str, tuple[str, str]]:
         return {
             "returns": (
-                words_to_str(tokens, type_="TYPE"),
-                words_to_str(tokens, type_="WORD"),
+                tokens_to_str(tokens, type_="TYPE"),
+                tokens_to_str(tokens, type_="WORD"),
             )
         }
 
@@ -64,8 +68,8 @@ class TreeToDict(Transformer):
     def yields(tokens: list[Token]) -> dict[str, tuple[str, str]]:
         return {
             "yields": (
-                words_to_str(tokens, type_="TYPE"),
-                words_to_str(tokens, type_="WORD"),
+                tokens_to_str(tokens, type_="TYPE"),
+                tokens_to_str(tokens, type_="WORD"),
             )
         }
 
@@ -76,24 +80,21 @@ class TreeToDict(Transformer):
     @staticmethod
     def error(tokens: list[Token]) -> tuple[str, str]:
         return (
-            words_to_str(tokens, type_="TYPE"),
-            words_to_str(tokens, type_="WORD"),
+            tokens_to_str(tokens, type_="TYPE"),
+            tokens_to_str(tokens, type_="WORD"),
         )
 
     @staticmethod
     def alias(tokens: list[Token]) -> dict[str, str]:
-        return {"alias": words_to_str(tokens, type_="WORD")}
+        return {"alias": tokens_to_str(tokens, type_="WORD")}
 
     @staticmethod
     def examples(tokens: list[Token]) -> dict[str, str]:
-        return {"examples": words_to_str(tokens, type_="WORD")}
-
-
-# https://google.github.io/styleguide/pyguide.html#381-docstrings) definitions
+        return {"examples": tokens_to_str(tokens, type_="WORD")}
 
 
 class DocstringParser(Lark):
-    """parse google style docstrings of module level python functions"""
+    """parses google style docstrings of module level python functions"""
 
     google_grammar = r"""
     ?start:         summary? description? args? (returns | yields)? raises? alias? examples?
@@ -106,12 +107,12 @@ class DocstringParser(Lark):
     raises:         "Raises"   ":" NL error+ NL
     examples:       "Examples" ":" NL [ ( TAB _line ) | NL ]+ NL
     alias:          "Alias"    ":" NL TAB _line NL
-    
+
     arg:            TAB NAME [ SP "(" TYPE ")" ] ":" ( SP | NL ) _line+
     error:          TAB _type
     _type:          TYPE ":" ( SP | NL ) _line+
-    _line:          WORD (SP WORD)* NL [ TAB TAB WORD (SP WORD)* NL ] 
-    
+    _line:          WORD (SP WORD)* NL [ TAB TAB WORD (SP WORD)* NL ]
+
     NAME:           /[\*|\*\*]*[_a-zA-Z][_a-zA-Z0-9]*/
     TYPE:           /[_a-zA-Z][_a-zA-Z0-9]*/
     WORD:           /[a-zA-Z0-9.`,>=()\[\]\/:]/+
@@ -131,7 +132,7 @@ class DocstringParser(Lark):
         try:
             tree = super().parse(text=text, **kwargs)
             # print("\n" + tree.pretty())
-            transformed = TreeToDict().transform(tree)
-            return Docstring(**transformed), None
-        except (GrammarError, UnexpectedCharacters, UnexpectedToken) as error:
+            dict_ = TreeToDict().transform(tree)
+            return Docstring(**dict_), None
+        except (UnexpectedCharacters, UnexpectedToken) as error:
             return None, ", ".join(error.args)

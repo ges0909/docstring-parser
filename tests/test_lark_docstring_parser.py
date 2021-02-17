@@ -76,7 +76,7 @@ def parser():
     return DocstringParser()
 
 
-# @pytest.mark.repeat(1000)
+@pytest.mark.repeat(1)
 def test_parse_google_style(benchmark):
     def parse(text):
         parser = DocstringParser()
@@ -91,7 +91,7 @@ def test_parse_google_style(benchmark):
     assert_doctsring(docstring)
 
 
-# @pytest.mark.repeat(1000)
+@pytest.mark.repeat(1)
 def test_parse_google_style_initialized_parser(benchmark, parser):
 
     # docstring, error = parser.parse(text=google_sample)
