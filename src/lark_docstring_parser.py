@@ -131,25 +131,23 @@ class DocstringParser(Lark):
     summary:        _line _nl
     description:    _line+ _nl
     args:           "Args"     ":" _nl arg+ _nl
-    returns:        "Returns"  ":" _nl _type _nl
-    yields:         "Yields"   ":" _nl TYPE ":" _type _nl
+    returns:        "Returns"  ":" _nl TAB _type _nl
+    yields:         "Yields"   ":" _nl TAB _type _nl
     raises:         "Raises"   ":" _nl error+ _nl
-    alias:          "Alias"    ":" _nl _line _nl
-    examples:       "Examples" ":" _nl [ _line | _nl ]+ _nl
+    examples:       "Examples" ":" _nl [ ( TAB _line ) | _nl ]+ _nl
+    alias:          "Alias"    ":" _nl TAB _line _nl
     
-    arg:            NAME [ "(" TYPE ")" ] ":" _line+
-    error:          _type
-    _type:          TYPE ":" _line+
-    _line:          WORD+ _nl
+    arg:            TAB NAME [ SP "(" TYPE ")" ] ":" SP _line+
+    error:          TAB _type
+    _type:          TYPE ":" SP _line+
+    _line:          WORD (SP WORD)* _nl [ TAB TAB WORD (SP WORD)* _nl ] 
     _nl:            "\n"
     
     NAME:           /[_a-zA-Z][_a-zA-Z0-9]*/
     TYPE:           /[_a-zA-Z][_a-zA-Z0-9]*/
-    WORD:           /[a-zA-Z0-9.`,>=()\[\]\/]/+
-    TAB:            "\t"
+    WORD:           /[a-zA-Z0-9.`,>=()\[\]\/:]/+
+    TAB:            ("\t" | "    ")
     SP:             /[ ]/+
-    
-    %ignore         SP
     """
 
     def __init__(self, **kwargs):
