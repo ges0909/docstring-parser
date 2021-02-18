@@ -1,7 +1,7 @@
-from src.pdoc3_docstring_parser import google
+import pdoc
 
 
-def test_numpy_style():
+def function_google_style(arg1: int, arg2: str, arg3: str) -> list:
     """Summary line.
 
     Extended description of function.
@@ -23,11 +23,32 @@ def test_numpy_style():
         Examples should be written in doctest format, and should illustrate how
         to use the function.
 
-        >>> a=1
-        >>> b=2
-        >>> func(a,b)
+        >> a=1
+        >> b=2
+        >> func(a,b)
         True
 
+    Alias:
+        Give the function an alias name.
     """
 
-    markdown = google(test_numpy_style.__doc__)
+
+def test_pdoc3():
+    modules = ["test_pdoc3_parser"]
+    context = pdoc.Context()
+    modules = [pdoc.Module(mod, context=context) for mod in modules]
+    pdoc.link_inheritance(context)
+    #
+    for m in modules:
+        for f in m.functions():
+            na = f.name
+            mo = f.module
+            ob = f.obj
+            do = f.docstring
+            ih = f.inherits
+            fd = f.funcdef()
+            pa = f.params(annotate=True)
+            ra = f.return_annotation()
+            pass
+        html = m.html()
+        pass

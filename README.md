@@ -15,6 +15,7 @@ start html/tests/index.html
 
 - allows mixing _google_ and _numpy_ styles
 - see `html_helpers.py` to get _numpy_ and _google_ style parsing based on regexp
+- non-standard _alias_ will be processed properly
 - missing landing page for multiple packages
 
 ## Mkdocs
@@ -29,6 +30,7 @@ mkdocs serve
 ```
 
 - supports _google_ style only
+- non-standard _alias_ will be processed but displayed in blue info-box
 
 Ref. [Documenting a Python package with mkdocs-material](https://chrieke.medium.com/documenting-a-python-package-with-code-reference-via-mkdocs-material-b4a45197f95b).
 
@@ -38,7 +40,7 @@ Ref. [Documenting a Python package with mkdocs-material](https://chrieke.medium.
 poetry add sphinx
 ```
 
-```bash
+````bash
 mkdir sphinx
 cd sphinx
 sphinx-quickstart
@@ -58,7 +60,7 @@ sys.path.insert(0, os.path.abspath("../../tests"))
 extensions = [
     "sphinx.ext.napoleon",
 ]
-```
+````
 
 ```bash
 sphinx-apidoc -f -o source/ ../tests
@@ -90,7 +92,6 @@ start build/html/index.html
 ```
 
 - mixing _google_ and _numpy_ style **not** recommended
-
 
 Ref. [Using Sphinx for Python Documentation](https://shunsvineyard.info/2019/09/19/use-sphinx-for-python-documentation/).
 
