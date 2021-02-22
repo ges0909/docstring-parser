@@ -1,6 +1,6 @@
 # Autodoc generation
 
-- [Google style](https://google.github.io/styleguide/pyguide.html#381-docstrings) definitions
+Refer to [Google style](https://google.github.io/styleguide/pyguide.html#381-docstrings) definitions.
 
 ## Pdoc3
 
@@ -13,9 +13,14 @@ pdoc --force --html src tests
 start html/tests/index.html
 ```
 
-- allows mixing _google_ and _numpy_ styles
-- see `html_helpers.py` to get _numpy_ and _google_ style parsing based on regexp
+Pro:
+
+- allows mixing of _google_ and _numpy_ styles
 - non-standard _alias_ will be processed properly
+- see `html_helpers.py` to get _numpy_ and _google_ style parsing based on regexp
+
+Con:
+
 - missing landing page for multiple packages
 
 ## Mkdocs
@@ -29,10 +34,17 @@ mkdocs new .
 mkdocs serve
 ```
 
-- supports _google_ style only
-- non-standard _alias_ will be processed but displayed in blue info-box
+Pro:
 
-Ref. [Documenting a Python package with mkdocs-material](https://chrieke.medium.com/documenting-a-python-package-with-code-reference-via-mkdocs-material-b4a45197f95b).
+- non-standard _alias_ will be processed **but displayed in blue info-box**
+
+Con:
+
+- supports _google_ style only
+
+Ref.
+
+- [Documenting a Python package with mkdocs-material](https://chrieke.medium.com/documenting-a-python-package-with-code-reference-via-mkdocs-material-b4a45197f95b).
 
 ## Sphinx
 
@@ -91,10 +103,16 @@ Indices and tables
 start build/html/index.html
 ```
 
+Con:
+
 - mixing _google_ and _numpy_ style **not** recommended
 
-Ref. [Using Sphinx for Python Documentation](https://shunsvineyard.info/2019/09/19/use-sphinx-for-python-documentation/).
+Ref.
 
-## Markdown for Sphinx
+- [Using Sphinx for Python Documentation](https://shunsvineyard.info/2019/09/19/use-sphinx-for-python-documentation/).
 
-Ref. [Markdown](https://www.sphinx-doc.org/en/master/usage/markdown.html).
+### Markdown for Sphinx
+
+Ref.
+
+- [Markdown](https://www.sphinx-doc.org/en/master/usage/markdown.html)
