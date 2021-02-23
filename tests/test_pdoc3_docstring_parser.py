@@ -57,45 +57,83 @@ def test_pdoc3():
         html = module.html()
 
 
+# --
+
+
 def get_alias(docstring: str) -> Optional[str]:
     lines = docstring.split("\n")
-    lines = [line.strip() for line in lines if line]
+    lines = [line.strip() for line in lines if line]  # remove leading and trailing spaces in each line
+    lines = [line for line in lines if line]  # remove empty lines
     for index, line in enumerate(lines):
-        if line == "Alias:":
-            return lines[index + 1]
+        if match := re.search(pattern=r"Alias:\s*(.+)\s*", string=line):
+            return match.group(1)
+        elif _ := re.search(pattern=r"Alias:", string=line):
+            if index < len(lines) - 1:
+                return lines[index + 1]
+            else:
+                return None
     return None
 
 
 @pytest.mark.parametrize(
+    ("docstring",),
     (
-        "docstring",
-        "expected",
-    ),
-    (
+        (r"""Alias: Give the function an alias name.""",),
+        (r"""Alias:Give the function an alias name.""",),
+        (r"""Alias:     Give the function an alias name.""",),
+        (r"""Alias: Give the function an alias name.     """,),
+        (r"""Alias:     Give the function an alias name.     """,),
+        (r"""     Alias:     Give the function an alias name.     """,),
         (
-            r"""Alias: Give the function an alias name.""",
-            "Give the function an alias name.",
+            r"""
+            Alias:     Give the function an alias name.     """,
         ),
         (
             r"""Alias:
             Give the function an alias name.""",
-            "Give the function an alias name.",
         ),
         (
             r"""Alias:
                 Give the function an alias name.
                 """,
-            "Give the function an alias name.",
         ),
         (
             r"""
                 Alias:
                     Give the function an alias name.
                     """,
-            "Give the function an alias name.",
         ),
     ),
 )
-def test_alias(docstring: str, expected: str):
+def test_alias(docstring: str):
     alias = get_alias(docstring=docstring)
+    # match = re.search(pattern=r"Alias:\s*(\S+(?:\s+\S+)*)\s*", string=docstring)
+    # alias = match.group(1)
+    assert alias == "Give the function an alias name."
+
+
+def test_docstring_alias(benchmark):
+    # alias = get_alias(docstring=function_google_style.__doc__)
+    alias = benchmark(get_alias, docstring=function_google_style.__doc__)
+    assert alias == "Give the function an alias name."
+
+
+def test_docstring_single_regex(benchmark):
+    # match = re.search(pattern=r"Alias:\s*(\S+(?:\s+\S+)*)\s*", string=function_google_style.__doc__)
+    match = benchmark(re.search, pattern=r"Alias:\s*(\S+(?:\s+\S+)*)\s*", string=function_google_style.__doc__)
+    assert match is not None
+    alias = match.group(1)
+    assert alias == "Give the function an alias name."
+    alias = alias.casefold()
+    assert alias == "give the function an alias name."
+    alias = re.sub(pattern=r"\s+", repl="", string=alias)
+    assert alias == "givethefunctionanaliasname."
+
+
+def test_docstring_single_regex_compile(benchmark):
+    regex = re.compile(pattern=r"Alias:\s*(\S+(?:\s+\S+)*)\s*")
+    # match = regex.search(string=function_google_style.__doc__)
+    match = benchmark(regex.search, string=function_google_style.__doc__)
+    assert match is not None
+    alias = match.group(1)
     assert alias == "Give the function an alias name."
